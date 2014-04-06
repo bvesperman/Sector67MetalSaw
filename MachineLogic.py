@@ -56,7 +56,7 @@ class MachineLogic:
         newest = max(glob.iglob('/home/pi/ImageLog/*.jpg'), key=os.path.getctime)
         print(newest)
         jpgfile = open(newest).read()
-        self.authService.AddMachinePayment(int(self.rfid),self.jobtime,self.machineID, 'Laser cut time for {0}'.format(self.jobtime),jpgfile)
+        self.authService.AddMachinePayment(int(self.rfid),self.jobtime,self.machineID, 'Metal Saw Enabled',jpgfile)
 
     
     def CaptureImage(self):
@@ -106,6 +106,7 @@ class MachineLogic:
 	   io.output(self.SawRelayPin,True)
 	   print("saw on")
            self.isOn = True
+           self.ReportJob()
 
 
 
