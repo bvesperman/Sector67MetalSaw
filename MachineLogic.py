@@ -17,19 +17,7 @@ class MachineLogic:
     isOn = False
     SawRelayPin = 24
     IndicatorPin = 23
-
-    #LASERPIN = 25    #// Laser power supply ACTIVE LOW
-    #LASERENABLEPIN1 = 23 #// Using two pins to trigger the relay to ensure enough current
-    #LASERENABLEPIN2 = 24 #// Using two pins to trigger the relay to ensure enough current
-    #JOB_END_TIME = 5 #//Time beam must be off before a job is ended and reported
-    #MIN_REPORT_TIME = 5 #//Minimum job length to generate a usage report
-
-    #state = [ "DISABLED",  "VERIFYING",  "ENABLED",  "ENROLLING"]
-    #currentstate = "DISABLED"
-    #laseron = False
-    #laserstarttime = time.localtime()
-    #lastlaserontime= time.localtime()
-    #jobtime = 0
+    lastsawenabledtime= datetime.datetime.now()
     authService = SectorAdminSite.SectorAdmin()
     
 
@@ -86,13 +74,13 @@ class MachineLogic:
   
 
     def DoUnAuthorizedContinuousWork(self):
-   	#if io.input(self.DoorButtonPin) == 1:
-	#   io.output(self.SawRelayPin,True)
-	#   print("door open")
+        if(datetime.datetime.now()-self.lastsawenabledtime).minutes > 15:
+           io.output(self.SawRelayPin, False)
+   	   io.output(self.IndicatorPin, False)
+	   print("saw off")
+           self.isOn = False
+
 	time.sleep(.05)
-        #   io.output(self.SawRelayPin,False)
-        #   print("door closed")
-	#self.CheckBeam()
         
     def DoAuthorizedWork(self):
 	if(self.isOn):
@@ -106,6 +94,7 @@ class MachineLogic:
 	   io.output(self.SawRelayPin,True)
 	   print("saw on")
            self.isOn = True
+           self.lastsawenabledtime= datetime.datetime.now()
            self.ReportJob()
 
 
