@@ -8,6 +8,7 @@ import SectorAdminSite
 import subprocess
 import glob
 import os
+from pyblinkm import BlinkM, Scripts
 
 class MachineLogic:
 
@@ -19,23 +20,23 @@ class MachineLogic:
     IndicatorPin = 23
     lastsawenabledtime= datetime.datetime.now()
     authService = SectorAdminSite.SectorAdmin()
-    
+    jobtime = 900
+    blinkm = BlinkM()
 
     def Busy(self):
         return self.isbusy
     
     def Setup(self):
-
         io.setmode(io.BCM)
-
 	io.setup(self.SawRelayPin, io.OUT)
-
 	io.output(self.SawRelayPin,False)
-
 	io.setup(self.IndicatorPin, io.OUT)
-
 	io.output(self.IndicatorPin,False)
-
+        self.blinkm.reset()
+        #self.blinkm.set_time_adjust(100)
+        self.blinkm.go_to(255,0,0)
+        #self.blinkm.play_script(Scripts.THUNDERSTORM)
+        #self.blinkm.go_to(255,255,255)
 
 
     #// If a job has recently ended, report it
@@ -74,25 +75,31 @@ class MachineLogic:
   
 
     def DoUnAuthorizedContinuousWork(self):
-        if(datetime.datetime.now()-self.lastsawenabledtime).minutes > 15:
+        if(datetime.datetime.now()-self.lastsawenabledtime).seconds > self.jobtime:
            io.output(self.SawRelayPin, False)
    	   io.output(self.IndicatorPin, False)
-	   print("saw off")
+	   #print("saw off")
            self.isOn = False
-
+           self.blinkm.go_to(255,0,0)
+        if(datetime.datetime.now()-self.lastsawenabledtime).seconds > 60 and self.isOn:
+           self.blinkm.reset()
+           self.blinkm.play_script(Scripts.RED_FLASH,40)
+           time.sleep(30)
 	time.sleep(.05)
         
     def DoAuthorizedWork(self):
 	if(self.isOn):
    	   io.output(self.SawRelayPin, False)
    	   io.output(self.IndicatorPin, False)
-
+           self.blinkm.reset()
+           self.blinkm.go_to(255,0,0)
 	   print("saw off")
            self.isOn = False
 	else:
 	   io.output(self.SawRelayPin,True)
 	   io.output(self.SawRelayPin,True)
 	   print("saw on")
+           self.blinkm.go_to(0,255,0)
            self.isOn = True
            self.lastsawenabledtime= datetime.datetime.now()
            self.ReportJob()
