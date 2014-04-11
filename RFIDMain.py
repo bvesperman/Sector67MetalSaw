@@ -12,6 +12,10 @@ from time import gmtime, strftime
 import subprocess
 import os
 import MachineLogic
+import logging 
+
+logging.basicConfig(filename='/home/pi/'+ time.strftime("%Y%m%d") + ".txt",level=logging.ERROR,)
+
 
 
 localRFID = ""
@@ -37,15 +41,16 @@ try:
       access.InsertAuthorizedUser(user['RFID'],user['ID'],user['FirstName'] + ' ' +user['LastName'])  
 except:
    print('exception')
+   #logging.exception('rebooting')
    rebootTime = time.time() + 60
 
-  
+try:
 
-#loop forever
-while True:
+   #loop forever
+   while True:
 
-    # read the standard input to see if the RFID has been swiped
-    while sys.stdin in select.select([sys.stdin],[],[],0)[0]:
+      # read the standard input to see if the RFID has been swiped
+      while sys.stdin in select.select([sys.stdin],[],[],0)[0]:
         localRFID = sys.stdin.readline()
         if localRFID:
             localRFID = ''.join(localRFID.splitlines())
@@ -57,14 +62,16 @@ while True:
 
                machine.DoAuthorizedWork()
 
-    machine.DoUnAuthorizedContinuousWork()
-    #machine.CheckBeam()
+      machine.DoUnAuthorizedContinuousWork()
+      #machine.CheckBeam()
 
 
-    time.sleep(.05)
+      time.sleep(.05)
 
-    if  time.time() > rebootTime and not machine.Busy():
+      if  time.time() > rebootTime and not machine.Busy():
         print("rebooting")
         os.system("reboot")
 
-
+except:
+    logging.exception('Main loop died')
+    raise

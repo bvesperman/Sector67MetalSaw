@@ -9,6 +9,7 @@ import subprocess
 import glob
 import os
 from pyblinkm import BlinkM, Scripts
+import logging 
 
 class MachineLogic:
 
@@ -22,6 +23,7 @@ class MachineLogic:
     authService = SectorAdminSite.SectorAdmin()
     jobtime = 900
     blinkm = BlinkM()
+    LEDStatus = "Off"
 
     def Busy(self):
         return self.isbusy
@@ -80,26 +82,40 @@ class MachineLogic:
    	   io.output(self.IndicatorPin, False)
 	   #print("saw off")
            self.isOn = False
-           self.blinkm.go_to(255,0,0)
-        if(datetime.datetime.now()-self.lastsawenabledtime).seconds > 60 and self.isOn:
+           if(self.LEDStatus <> "Off"):
+           	self.blinkm.reset()
+           	self.blinkm.go_to(255,0,0)
+           	self.LEDStatus = "Off"
+        if(datetime.datetime.now()-self.lastsawenabledtime).seconds > self.jobtime - 120 and self.isOn and self.LEDStatus <> "Warning":
            self.blinkm.reset()
-           self.blinkm.play_script(Scripts.RED_FLASH,40)
-           time.sleep(30)
-	time.sleep(.05)
+           self.blinkm.play_script(Scripts.BLUE_FLASH,40)
+           self.LEDStatus = "Warning"
+
+	time.sleep(.25)
         
     def DoAuthorizedWork(self):
 	if(self.isOn):
    	   io.output(self.SawRelayPin, False)
    	   io.output(self.IndicatorPin, False)
-           self.blinkm.reset()
-           self.blinkm.go_to(255,0,0)
+
+           if(self.LEDStatus <> "Off"):
+           	self.blinkm.reset()
+           	self.blinkm.go_to(255,0,0)
+                self.LEDStatus = "Off"
+ 
 	   print("saw off")
+           logging.exception("saw off")
            self.isOn = False
 	else:
 	   io.output(self.SawRelayPin,True)
 	   io.output(self.SawRelayPin,True)
 	   print("saw on")
-           self.blinkm.go_to(0,255,0)
+           logging.exception("saw on")
+	   if(self.LEDStatus <> "On"): 
+           	self.blinkm.reset()
+           	self.blinkm.go_to(0,255,0)
+		self.LEDStatus = "On"
+
            self.isOn = True
            self.lastsawenabledtime= datetime.datetime.now()
            self.ReportJob()
