@@ -28,7 +28,7 @@ access = RFIDDataAccess.DataAccess()
 authService = SectorAdminSite.SectorAdmin()
 
 try:
-   #Delete Current Cache of Authorized users
+#Delete Current Cache of Authorized users
    access.DeleteAllAuthorizedUsers()
 
    #Pull down the current list of authorized users
@@ -37,11 +37,14 @@ try:
    #authService.UpdateMachine(machineID)
 
    #add the users to the cache
-   for user in data:
-      access.InsertAuthorizedUser(user['RFID'],user['ID'],user['FirstName'] + ' ' +user['LastName'])  
+   for user in data["message"]:
+   #print (user["rfid"])
+
+
+      access.InsertAuthorizedUser(user["rfid"],0,user["display_name"])  
 except:
-   print('exception')
-   #logging.exception('rebooting')
+#   print('exception')
+   logging.exception('rebooting')
    rebootTime = time.time() + 60
 
 try:
