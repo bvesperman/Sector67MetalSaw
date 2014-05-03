@@ -14,7 +14,7 @@ import logging
 class MachineLogic:
 
     rfid =0
-    machineID = 5
+    machineID = 11
     isbusy = False
     isOn = False
     SawRelayPin = 24

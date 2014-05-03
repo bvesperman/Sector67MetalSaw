@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import json
 from suds.client import Client
+import requests
 
 class SectorAdmin:
 
@@ -8,11 +9,17 @@ class SectorAdmin:
 
     def GetAuthorizedUsers( self, MachineID):
 
- 	url = "https://www.pinsoft.net/sectorbilling/payments.asmx?wsdl"
-	client = Client(url)
-	data = client.service.GetMachineAuthorizationByMachineIDForPI(MachineID)
-        result = json.loads(data)
-	return result
+ 	#url = "https://www.pinsoft.net/sectorbilling/payments.asmx?wsdl"
+	#client = Client(url)
+	#data = client.service.GetMachineAuthorizationByMachineIDForPI(MachineID)
+        #result = json.loads(data)
+
+	response = requests.get('http://www.sector67.org/blog/api/machine/get_rfids_for_machine/?machine_id={0}'.format(MachineID))
+
+	#data = json.loads(response.text)
+        
+	return response.json() #data
+
 
 
 
@@ -49,8 +56,9 @@ class SectorAdmin:
 
     def AddMachinePayment ( self, RFID, Amount, MachineID, Description, Image):
 
- 	url = "https://www.pinsoft.net/sectorbilling/payments.asmx?wsdl"
-	client = Client(url)
-	data = client.service.AddMachinePayment(RFID,Amount,MachineID, Description, 0)
+	requests.post('http://www.sector67.org/blog/api/machine/log_machine_usage/?machine_id={0}&unit={1}&rfid={2}'.format(MachineID, Amount, RFID))
+ 	#url = "https://www.pinsoft.net/sectorbilling/payments.asmx?wsdl"
+	#client = Client(url)
+	#data = client.service.AddMachinePayment(RFID,Amount,MachineID, Description, 0)
         #result = json.loads(data)
 	#return result
